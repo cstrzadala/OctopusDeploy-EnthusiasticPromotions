@@ -141,7 +141,7 @@ function Get-PromotionCandidates($progression) {
                 Write-Host " - Deployment to '$nextEnvironmentName' already exists in state $($mostRecentDeploymentToNextEnvironment[0].State)."
             } elseif (($null -ne $mostRecentReleaseDeployedToNextEnvironment) -and ((New-Object Octopus.Versioning.Semver.SemanticVersion $mostRecentReleaseDeployedToNextEnvironment.Release.Version) -gt (New-Object Octopus.Versioning.Semver.SemanticVersion $release.Release.Version))) {
                 $channelName = Get-ChannelName $channels $release.Release.ChannelId
-                Write-Host " - A newer release '$($mostRecentReleaseDeployedToNextEnvironment.Version)' in channel '$channelName' has already been deployed to '$nextEnvironmentName'."
+                Write-Host " - A newer release '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' in channel '$channelName' has already been deployed to '$nextEnvironmentName'."
             } else {
                 $bakeTime = $waitTimeForEnvironmentLookup[$currentEnvironmentId].BakeTime
                 Write-Host " - Calculated the bake time that releases should stay in environment '$currentEnvironmentName' before being promoted to '$nextEnvironmentName' to be $bakeTime."
