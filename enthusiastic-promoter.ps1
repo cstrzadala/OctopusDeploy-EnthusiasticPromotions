@@ -1,3 +1,6 @@
+if (-not (Test-Path variable:OctopusParameters)) {
+    $OctopusParameters = New-Object 'System.Collections.Generic.Dictionary[String,String]'
+}
 #automatically provided variables
 $projectName = $OctopusParameters["Octopus.Project.Name"]
 $spaceId = $OctopusParameters["Octopus.Space.Id"]
@@ -25,7 +28,6 @@ $waitTimeForEnvironmentLookup = @{
     "Environments-2589" = @{ "Name" = "General Availablilty";       "BakeTime" = New-TimeSpan -Days 1;    }
 }
 
-
 function Test-PipelineBlocked($release) {
     $body = @{
         Product = "OctopusServer";
@@ -47,94 +49,164 @@ function Get-CurrentEnvironment($progression, $release) {
     return $currentEnvironmentId
 }
 
-Add-Type -Path "$octopusVersioningPath/lib/netstandard2.0/Octopus.Versioning.dll"
+function Get-EnvironmentName($progression, $environmentId) {
+    return ($progression.Environments | Where-Object { $_.Id -eq $environmentId }).Name
+}
 
-$progression = Invoke-restmethod -Uri "https://deploy.octopus.app/api/$spaceId/progression/$projectId" -Headers @{ 'X-Octopus-ApiKey' = $octopusApiKey }
+function Get-AlreadyDeployedEnvironmentNames($release) {
+  return @($release.Deployments.PSObject.Properties.Name)
+}
 
-$promotionCandidates = @{}
+function Get-DeploymentsToEnvironment {
+  [OutputType([object[]])]
+  Param($release, $environmentId)
 
-Write-Host "Looking for possible releases to promote:"
-foreach ($release in $progression.Releases) {
-    write-host "--------------------------------------------------------"
-    Write-Host "Evaluating candidate release $($release.Release.Version):"
-    write-host "--------------------------------------------------------"
+  return (,($release.Deployments.PSObject.Properties | where-object { $_.Name -eq $environmentId }))
+}
 
-    if ($release.NextDeployments.length -eq 0) {
-        Write-Host " - Release has already progressed as far as it can."
-    } elseif ($release.NextDeployments.length -gt 1) {
-        Write-Warning " - Unexpected number of NextDeployments - expected 1, but found $($release.NextDeployments.length)."
-        exit 1
+function Get-ChannelName($channels, $channelId) {
+    return ($channels.Items | Where-object { $_.Id -eq $channelId }).Name
+}
+
+function Get-CurrentDate {
+  # for mocking
+  return Get-Date
+}
+
+function Get-MostRecentDeploymentToEnvironment ($release, $environmentId) {
+    $alreadyDeployedEnvironments = [array](Get-AlreadyDeployedEnvironmentNames $release)
+    if ($alreadyDeployedEnvironments.Contains($environmentId)) {
+        $deploymentsToEnvironment = [array](Get-DeploymentsToEnvironment $release $environmentId)
+        if ($null -ne $deploymentsToEnvironment) {
+            return $deploymentsToEnvironment.Value | Sort-Object -Property CompletedTime -Descending | Select-Object -First 1
+        }
+    }
+    return $null
+}
+
+function Add-PromotionCandidate($promotionCandidates, $release, $nextEnvironmentId) {
+    $key = $release.Release.ChannelId + "|" + $nextEnvironmentId
+    $semanticVersion = New-Object Octopus.Versioning.Semver.SemanticVersion $release.Release.Version
+    if ($promotionCandidates.ContainsKey($key)) {
+        $existing = $promotionCandidates[$key]
+        if ($existing.Version -lt $semanticVersion) {
+            Write-Host " - This is a newer version than the previous promotion candidate ($($existing.Version)). Overriding promotion candidate to this version."
+            $existing.Version = $semanticVersion
+        }
     } else {
+        $promotionCandidates.Add($key, [PSCustomObject]@{
+            ChannelId       = $release.Release.ChannelId
+            ChannelName     = Get-ChannelName $channels $release.Release.ChannelId
+            EnvironmentId   = $nextEnvironmentId
+            EnvironmentName = $nextEnvironmentName
+            Version         = $semanticVersion
+        })
+    }
+}
+
+function Get-MostRecentReleaseDeployedToEnvironment($progression, $release, $environmentId) {
+    return $progression.Releases `
+           | Where-Object { $_.Release.ChannelId -eq $release.Release.ChannelId } `
+           | where-object { (Get-AlreadyDeployedEnvironmentNames $_) -contains $environmentId } `
+           | sort-object { New-Object Octopus.Versioning.Semver.SemanticVersion $_.Release.Version } -Descending `
+           | Select-Object -First 1
+}
+
+function Get-PromotionCandidates($progression) {
+    $promotionCandidates = @{}
+
+    Write-Host "Looking for possible releases to promote:"
+    foreach ($release in $progression.Releases) {
+        write-host "--------------------------------------------------------"
+        Write-Host "Evaluating candidate release $($release.Release.Version):"
+        write-host "--------------------------------------------------------"
+        write-host " - Channel is $(Get-ChannelName $channels $release.Release.ChannelId)"
         $currentEnvironmentId = Get-CurrentEnvironment $progression $release
-        $currentEnvironmentName = ($progression.Environments | Where-Object { $_.Id -eq $currentEnvironmentId }).Name
+        $currentEnvironmentName = Get-EnvironmentName $progression $currentEnvironmentId
         Write-Host " - Current environment is '$($currentEnvironmentName)'"
 
-        $nextEnvironmentId = $release.NextDeployments[0]
-        $nextEnvironmentName = ($progression.Environments | Where-Object { $_.Id -eq $nextEnvironmentId }).Name
-        Write-Host " - Next environment is '$($nextEnvironmentName)'"
-
-        $alreadyDeployedEnvironments = @($release.Deployments.PSObject.Properties.Name)
-        $deploymentsToNextEnvironment = (,$release.Deployments.PSObject.Properties | where-object { $_.Name -eq $nextEnvironmentId })
-        if ($null -ne $deploymentsToNextEnvironment) {
-            $deploymentsToNextEnvironment = $deploymentsToNextEnvironment.Value | Sort-Object -Property CompletedTime -Descending
-        }
-        if ($alreadyDeployedEnvironments.Contains($nextEnvironmentId)) {
-            Write-Host " - Deployment to '$nextEnvironmentName' already exists in state $($deploymentsToNextEnvironment[0].State)."
+        if ($release.NextDeployments.length -eq 0) {
+            Write-Host " - Release has already progressed as far as it can."
+        } elseif ($release.NextDeployments.length -gt 1) {
+            Write-Warning " - Unexpected number of NextDeployments - expected 1, but found $($release.NextDeployments.length)."
+            exit 1
         } else {
-            $bakeTime = $waitTimeForEnvironmentLookup[$currentEnvironmentId].BakeTime
-            $deploymentsToCurrentEnvironment = (,$release.Deployments.PSObject.Properties | where-object { $_.Name -eq $currentEnvironmentId })
-            if ($null -ne $deploymentsToCurrentEnvironment) {
-                $deploymentsToCurrentEnvironment = $deploymentsToCurrentEnvironment.Value | Sort-Object -Property CompletedTime -Descending
-            }
-            
-            Write-Host " - Calculated the bake time that releases should stay in environment '$currentEnvironmentName' before being promoted to '$nextEnvironmentName' to be $bakeTime."
-            
-            if (($deploymentsToCurrentEnvironment.length -gt 0) -and ($deploymentsToCurrentEnvironment[0].CompletedTime.Add($bakeTime) -gt (Get-Date))) {
-                Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment[0].CompletedTime) (UTC)"
-                Write-Host " - This release is still baking. Will try again later after $($deploymentsToCurrentEnvironment[0].CompletedTime.Add($bakeTime)) (UTC)."
-            } else {
-            	if ($deploymentsToCurrentEnvironment.length -eq 0) {
-                	Write-Host " - Bake time was ignored as there was no deployments to the environment $currentEnvironmentName"
-                } else {
-                    Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment[0].CompletedTime) (UTC)"
-                }
-                Write-Host " - Checking Andon cord to see if release pipeline is blocked..."
-                if (Test-PipelineBlocked $release) {
-                    Write-Host " - Release pipeline is currently blocked with problems. Release will not be promoted."
-                } else {
-                    Write-Host " - Release pipeline doesn't currently have any blocking problems. Release can be promoted."
-                    Write-Host " - Found candidate for promotion - release $($release.Release.Version) to '$nextEnvironmentName' ($nextEnvironmentId)."
+            $nextEnvironmentId = $release.NextDeployments[0]
+            $nextEnvironmentName = Get-EnvironmentName $progression $nextEnvironmentId
+            Write-Host " - Next environment is '$($nextEnvironmentName)'"
 
-                    $key = $release.Release.ChannelId + "|" + $nextEnvironmentId
-                    $semanticVersion = New-Object Octopus.Versioning.Semver.SemanticVersion $release.Release.Version
-                    if ($promotionCandidates.ContainsKey($key)) {
-                        $existing = $promotionCandidates[$key]
-                        if ($existing.Version -lt $semanticVersion) {
-                            Write-Host " - This is a newer version than the previous promotion candidate ($($existing.Version)). Overriding promotion candidate to this version."
-                            $existing.Version = $semanticVersion
-                        }
+            $mostRecentDeploymentToNextEnvironment = Get-MostRecentDeploymentToEnvironment $release $nextEnvironmentId
+            $mostRecentReleaseDeployedToNextEnvironment = Get-MostRecentReleaseDeployedToEnvironment -progression $progression -release $release -environmentId $nextEnvironmentId
+            if ($null -ne $mostRecentDeploymentToNextEnvironment) {
+                Write-Host " - Deployment to '$nextEnvironmentName' already exists in state $($mostRecentDeploymentToNextEnvironment[0].State)."
+            } elseif (($null -ne $mostRecentReleaseDeployedToNextEnvironment) -and ((New-Object Octopus.Versioning.Semver.SemanticVersion $mostRecentReleaseDeployedToNextEnvironment.Release.Version) -gt (New-Object Octopus.Versioning.Semver.SemanticVersion $release.Release.Version))) {
+                $channelName = Get-ChannelName $channels $release.Release.ChannelId
+                Write-Host " - A newer release '$($mostRecentReleaseDeployedToNextEnvironment.Version)' in channel '$channelName' has already been deployed to '$nextEnvironmentName'."
+            } else {
+                $bakeTime = $waitTimeForEnvironmentLookup[$currentEnvironmentId].BakeTime
+                Write-Host " - Calculated the bake time that releases should stay in environment '$currentEnvironmentName' before being promoted to '$nextEnvironmentName' to be $bakeTime."
+
+                $deploymentsToCurrentEnvironment = Get-MostRecentDeploymentToEnvironment $release $currentEnvironmentId
+                if (($null -ne $deploymentsToCurrentEnvironment) -and ($deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime) -gt (Get-CurrentDate))) {
+                    Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment.CompletedTime) (UTC)"
+                    Write-Host " - This release is still baking. Will try again later after $($deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime)) (UTC)."
+                } else {
+                    if ($null -eq $deploymentsToCurrentEnvironment) {
+                        # not sure this should ever happen
+                        Write-Warning " - Bake time was ignored as there was no deployments to the environment $currentEnvironmentName"
                     } else {
-                        $promotionCandidates.Add($key, [PSCustomObject]@{
-                            ChannelId       = $release.Release.ChannelId
-                            EnvironmentId   = $nextEnvironmentId
-                            EnvironmentName = $nextEnvironmentName
-                            Version         = $semanticVersion
-                        })
+                        Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment[0].CompletedTime) (UTC)"
+                    }
+                    Write-Host " - Checking Andon cord to see if release pipeline is blocked..."
+                    if (Test-PipelineBlocked $release) {
+                        Write-Host " - Release pipeline is currently blocked with problems. Release will not be promoted."
+                    } else {
+                        Write-Host " - Release pipeline doesn't currently have any blocking problems. Release can be promoted."
+                        Write-Host " - Found candidate for promotion - release $($release.Release.Version) to '$nextEnvironmentName' ($nextEnvironmentId)."
+
+                        Add-PromotionCandidate -promotionCandidates $promotionCandidates -release $release -nextEnvironmentId $nextEnvironmentId
                     }
                 }
             }
         }
     }
+    return $promotionCandidates
 }
 
-write-host "--------------------------------------------------------"
-if ($promotionCandidates.Count -eq 0) {
-    Write-Host "No promotion candidates found"
-} else {
-    write-host "Promoting releases:"
-    $promotionCandidates.keys | ForEach-Object {
-        $promotionCandidate = $promotionCandidates.Item($_)
-        Write-Host " - Promoting release '$($promotionCandidate.Version)' to environment '$($promotionCandidate.EnvironmentName)' ($($promotionCandidate.EnvironmentId))."
-        & $octopusToolsPath\tools\octo.exe deploy-release --deployTo $promotionCandidate.EnvironmentId --version $promotionCandidate.Version --project "$projectName" --apiKey $OctopusApiKey --server "https://deploy.octopus.app" --space "Octopus Server"
+function Main() {
+    Add-Type -Path "$octopusVersioningPath/lib/netstandard2.0/Octopus.Versioning.dll"
+
+    $progression = Invoke-restmethod -Uri "https://deploy.octopus.app/api/$spaceId/progression/$projectId" -Headers @{ 'X-Octopus-ApiKey' = $octopusApiKey }
+
+    # log out the progression json, so we can diagnose what's happening / write a test for it
+    write-verbose "--------------------------------------------------------"
+    write-verbose "Progression response:"
+    write-verbose "--------------------------------------------------------"
+    write-verbose ($progression | ConvertTo-Json -depth 10)
+    write-verbose "--------------------------------------------------------"
+
+    $channels = Invoke-restmethod -Uri "https://deploy.octopus.app/api/$spaceId/projects/$projectId/channels" -Headers @{ 'X-Octopus-ApiKey' = $octopusApiKey }
+    # log out the channels json, so we can diagnose what's happening / write a test for it
+    write-verbose "--------------------------------------------------------"
+    write-verbose "Channels response:"
+    write-verbose "--------------------------------------------------------"
+    write-verbose ($channels | ConvertTo-Json -depth 10)
+    write-verbose "--------------------------------------------------------"
+
+    $promotionCandidates = Get-PromotionCandidates $progression $channels
+
+    write-host "--------------------------------------------------------"
+    if ($promotionCandidates.Count -eq 0) {
+        Write-Host "No promotion candidates found"
+    } else {
+        write-host "Promoting releases:"
+        $promotionCandidates.keys | ForEach-Object {
+            $promotionCandidate = $promotionCandidates.Item($_)
+            write-host "--------------------------------------------------------"
+            Write-Host " - Promoting release '$($promotionCandidate.Version)' to environment '$($promotionCandidate.EnvironmentName)' ($($promotionCandidate.EnvironmentId))."
+            write-host "--------------------------------------------------------"
+            & $octopusToolsPath\tools\octo.exe deploy-release --deployTo $promotionCandidate.EnvironmentId --version $promotionCandidate.Version --project "$projectName" --apiKey $OctopusApiKey --server "https://deploy.octopus.app" --space "Octopus Server"
+        }
     }
+    write-host "--------------------------------------------------------"
 }
