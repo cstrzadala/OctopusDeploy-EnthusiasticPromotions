@@ -53,7 +53,7 @@ function Get-EnvironmentName($progression, $environmentId) {
     return ($progression.Environments | Where-Object { $_.Id -eq $environmentId }).Name
 }
 
-function Get-AlreadyDeployedEnvironmentNames($release) {
+function Get-AlreadyDeployedEnvironmentIds($release) {
   return @($release.Deployments.PSObject.Properties.Name)
 }
 
@@ -74,7 +74,7 @@ function Get-CurrentDate {
 }
 
 function Get-MostRecentDeploymentToEnvironment ($release, $environmentId) {
-    $alreadyDeployedEnvironments = [array](Get-AlreadyDeployedEnvironmentNames $release)
+    $alreadyDeployedEnvironments = [array](Get-AlreadyDeployedEnvironmentIds $release)
     if ($alreadyDeployedEnvironments.Contains($environmentId)) {
         $deploymentsToEnvironment = [array](Get-DeploymentsToEnvironment $release $environmentId)
         if ($null -ne $deploymentsToEnvironment) {
@@ -107,7 +107,7 @@ function Add-PromotionCandidate($promotionCandidates, $release, $nextEnvironment
 function Get-MostRecentReleaseDeployedToEnvironment($progression, $release, $environmentId) {
     return $progression.Releases `
            | Where-Object { $_.Release.ChannelId -eq $release.Release.ChannelId } `
-           | where-object { (Get-AlreadyDeployedEnvironmentNames $_) -contains $environmentId } `
+           | where-object { (Get-AlreadyDeployedEnvironmentIds $_) -contains $environmentId } `
            | sort-object { New-Object Octopus.Versioning.Semver.SemanticVersion $_.Release.Version } -Descending `
            | Select-Object -First 1
 }
