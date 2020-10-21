@@ -27,6 +27,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         
+      - name: Install Pester
+        id: install-pester
+        run: Install-Module "Pester" -Force
+       
       - name: Run Pester Tests
         id: pester-tests
         run: Invoke-Pester
