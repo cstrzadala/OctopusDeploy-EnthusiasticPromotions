@@ -12,8 +12,8 @@ on:
 
 env:
     PACKAGE_PREFIX: 1
-    OCTOPUS_PROJECT_NAME: EnthisuasticPromotions
-    OCTOPUS_SPACE_NAME: OctopusServer
+    OCTOPUS_PACKAGE_NAME: EnthisuasticPromotions
+    OCTOPUS_SPACE_NAME: "Octopus Server"
     
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -46,11 +46,11 @@ jobs:
         run: echo "::set-env name=PACKAGE_VERSION::$PACKAGE_PREFIX.$GITHUB_RUN_NUMBER"
     
       - name: Make package directories
-        run: mkdir -p ./packagesoutput/$OCTOPUS_PROJECT_NAME    
+        run: mkdir -p ./packagesoutput/$OCTOPUS_PACKAGE_NAME    
       
       - name: Move PS script to build folder
         id: move-ps-script-to-build-folder
-        run: cp ./enthusiastic-promoter.ps1 ./packagesoutput/$OCTOPUS_PROJECT_NAME
+        run: cp ./enthusiastic-promoter.ps1 ./packagesoutput/$OCTOPUS_PACKAGE_NAME
     
       - name: Install Octopus CLI
         run: |
@@ -61,6 +61,5 @@ jobs:
           
       - name: Package and Push to Octopus
         run: |
-          octo pack --id="$OCTOPUS_PROJECT_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PROJECT_NAME" --outFolder="./packages"
-          ls ./packages
-          octo push --package="./packages/$OCTOPUS_PROJECT_NAME.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}"
+          octo pack --id="$OCTOPUS_PROJECT_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PACKAGE_NAME" --outFolder="./packages"
+          octo push --package="./packages/$OCTOPUS_PACKAGE_NAME.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}" --space=$OCTOPUS_SPACE_NAME
