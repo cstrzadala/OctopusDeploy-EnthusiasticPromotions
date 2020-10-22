@@ -59,7 +59,8 @@ jobs:
           sudo sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && \
           sudo apt update && sudo apt install octopuscli 
           
-      - name: Package and Push to Octopus
-        run: |
-          octo pack --id="$OCTOPUS_PACKAGE_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PACKAGE_NAME" --outFolder="./packages"
-          octo push --package="./packages/$OCTOPUS_PACKAGE_NAME.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}" --space=$OCTOPUS_SPACE_NAME
+      - name: Package
+        run: octo pack --id="$OCTOPUS_PACKAGE_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PACKAGE_NAME" --outFolder="./packages"
+          
+      - name: Push to Octopus
+        run: octo push --package="./packages/$OCTOPUS_PACKAGE_NAME.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}" --space=$OCTOPUS_SPACE_NAME
