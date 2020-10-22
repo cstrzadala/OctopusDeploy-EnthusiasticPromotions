@@ -12,33 +12,6 @@ $waitTimeForEnvironmentLookup = @{
     "Environments-2589" = @{ "Name" = "General Availablilty";       "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0; }
 }
 
-if (Test-Path variable:OctopusParameters) {
-    #automatically provided variables
-    $projectName = $OctopusParameters["Octopus.Project.Name"]
-    $spaceId = $OctopusParameters["Octopus.Space.Id"]
-    $projectId = $OctopusParameters["Octopus.Project.Id"]
-
-    #variables provided from additional packages
-    $octopusToolsPath = $OctopusParameters["Octopus.Action.Package[OctopusTools].ExtractedPath"]
-    $octopusVersioningPath = $OctopusParameters["Octopus.Action.Package[Octopus.Versioning].ExtractedPath"]
-
-    #variables from the project
-    $octofrontApiKey = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
-    $octofrontUrl = $OctopusParameters["OctofrontUrl"]
-    $octopusApiKey = $OctopusParameters["OctopusApiKey"]
-
-    # do the magic
-    Add-Type -Path "$octopusVersioningPath/lib/netstandard2.0/Octopus.Versioning.dll"
-
-    $progression = Get-FromApi "https://deploy.octopus.app/api/$spaceId/progression/$projectId"
-    $channels = Get-FromApi "https://deploy.octopus.app/api/$spaceId/projects/$projectId/channels"
-    $lifecycles = Get-FromApi "https://deploy.octopus.app/api/$spaceId/lifecycles/all"
-
-    $promotionCandidates = Get-PromotionCandidates -progression $progression -channels $channels -lifecycles $lifecycles
-
-    Promote-Releases $promotionCandidates
-}
-
 function Test-PipelineBlocked($release) {
     $body = @{
         Product = "OctopusServer";
@@ -233,4 +206,31 @@ function Promote-Releases($promotionCandidates) {
         }
     }
     write-host "--------------------------------------------------------"
+}
+
+if (Test-Path variable:OctopusParameters) {
+    #automatically provided variables
+    $projectName = $OctopusParameters["Octopus.Project.Name"]
+    $spaceId = $OctopusParameters["Octopus.Space.Id"]
+    $projectId = $OctopusParameters["Octopus.Project.Id"]
+
+    #variables provided from additional packages
+    $octopusToolsPath = $OctopusParameters["Octopus.Action.Package[OctopusTools].ExtractedPath"]
+    $octopusVersioningPath = $OctopusParameters["Octopus.Action.Package[Octopus.Versioning].ExtractedPath"]
+
+    #variables from the project
+    $octofrontApiKey = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
+    $octofrontUrl = $OctopusParameters["OctofrontUrl"]
+    $octopusApiKey = $OctopusParameters["OctopusApiKey"]
+
+    # do the magic
+    Add-Type -Path "$octopusVersioningPath/lib/netstandard2.0/Octopus.Versioning.dll"
+
+    $progression = Get-FromApi "https://deploy.octopus.app/api/$spaceId/progression/$projectId"
+    $channels = Get-FromApi "https://deploy.octopus.app/api/$spaceId/projects/$projectId/channels"
+    $lifecycles = Get-FromApi "https://deploy.octopus.app/api/$spaceId/lifecycles/all"
+
+    $promotionCandidates = Get-PromotionCandidates -progression $progression -channels $channels -lifecycles $lifecycles
+
+    Promote-Releases $promotionCandidates
 }
