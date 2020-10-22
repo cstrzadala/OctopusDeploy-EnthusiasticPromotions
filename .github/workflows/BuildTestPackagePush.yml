@@ -30,17 +30,27 @@ jobs:
       - name: Install Pester
         id: install-pester
         run: Install-Module "Pester" -Force
+        shell: pwsh
        
       - name: Run Pester Tests
         id: pester-tests
-        run: Invoke-Pester
+        run: |
+          Import-Module -Name "Pester"
+          $configuration = [PesterConfiguration]::Default
+          $configuration.Run.Exit = $true
+          Invoke-Pester -configuration $configuration
+        shell: pwsh
 
       - name: Set version
         id: set-version
         run: echo "::set-env name=PACKAGE_VERSION::$PACKAGE_PREFIX.$GITHUB_RUN_NUMBER"
     
       - name: Make package directories
-        run: mkdir -p ./packagesoutput/          
+        run: mkdir -p ./packagesoutput/$OCTOPUS_PROJECT_NAME    
+      
+      - name: Move PS script to build folder
+        id: move-ps-script-to-build-folder
+        run: cp ./enthusiastic-promoter.ps1 ./packagesoutput/$OCTOPUS_PROJECT_NAME
     
       - name: Install Octopus CLI
         run: |
@@ -51,6 +61,6 @@ jobs:
           
       - name: Package and Push to Octopus
         run: |
-          octo pack --id="MyApp.Web" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/MyApp.Web" --outFolder="./packages"
-
-          octo push --package="./packages/MyApp.Web.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}"
+          octo pack --id="$OCTOPUS_PROJECT_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PROJECT_NAME" --outFolder="./packages"
+          ls ./packages
+          octo push --package="./packages/$OCTOPUS_PROJECT_NAME.$PACKAGE_VERSION.zip" --server="${{ secrets.OCTOPUS_SERVER }}" --apiKey="${{ secrets.OCTOPUS_APIKEY }}"
