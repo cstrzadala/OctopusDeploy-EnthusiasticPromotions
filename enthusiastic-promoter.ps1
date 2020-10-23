@@ -17,7 +17,7 @@ function Test-PipelineBlocked($release) {
         Product = "OctopusServer";
         Version = $release.Release.Version
     }
-    $activeProblems =  (Invoke-restmethod -Uri "$octofrontUrl/api/Problem/ActiveProblems" -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -Method POST -Body ($body | ConvertTo-Json)).ActiveProblems
+    $activeProblems =  (Invoke-restmethod -Uri "$octofrontUrl/api/Problem/ActiveProblems" -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -Method GET -Body ($body | ConvertTo-Json)).ActiveProblems
 
     return $activeProblems.Count -gt 0
 }
