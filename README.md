@@ -5,6 +5,15 @@ This script is used as a runbook within the Octopus Server project which is run 
 
 At Octopus, we're want green builds to mean that they're ready for release, which is part of why we have enthusiastic promotions now - developers can spend less time getting builds ready for customers and we can ship smaller, more often and to our own environments first so if things go wrong, we can catch them early and protect our customers. 
 
-## Octopus Developers
+# Contributing
+Firstly, thanks for contributing! :tada:
 
-After making changes to the script, currently we have to update the runbook in the Octopus Server project to use the new package. This is because runbooks need to be published to be able to setup a trigger for them, and published runbooks get a snapshot with the package version. Feel free to reach out in #topic-build-delivery if you need assistance. 
+1. Modify the tests to suit the change you want to make.
+2. Modify the script to meet the new tests.
+3. Run `Invoke-Pester` in the root directory to ensure all the tests pass
+4. Create a pull request
+5. Merge the pull request (GitHub Actions will run the tests for you and push your package to Deploy when successful)
+6. Navigate to https://deploy.octopus.app and open the Octopus Server project in the Octopus Server space
+7. Open the "Enthusiastic Promotions" runbook 
+8. Click "publish" on the runbook and use the latest package 
+9. Now Octopus will use the new enthusiastic promoter script!
