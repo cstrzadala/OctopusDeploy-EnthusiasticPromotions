@@ -14,6 +14,6 @@ Firstly, thanks for contributing! :tada:
 4. Create a pull request
 5. Merge the pull request (GitHub Actions will run the tests for you and push your package to Deploy when successful)
 6. Navigate to https://deploy.octopus.app and open the Octopus Server project in the Octopus Server space
-7. Open the "Enthusiastic Promotions" runbook 
+7. Open the "[Enthusiastic Promotions](https://deploy.octopus.app/app#/Spaces-622/projects/octopus-server/operations/runbooks/Runbooks-661/overview)" runbook 
 8. Click "publish" on the runbook and use the latest package 
 9. Now Octopus will use the new enthusiastic promoter script!
