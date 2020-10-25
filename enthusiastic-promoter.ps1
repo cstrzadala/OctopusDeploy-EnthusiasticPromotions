@@ -13,11 +13,8 @@ $waitTimeForEnvironmentLookup = @{
 }
 
 function Test-PipelineBlocked($release) {
-    $body = @{
-        Product = "OctopusServer";
-        Version = $release.Release.Version
-    }
-    $activeProblems =  (Invoke-restmethod -Uri "$octofrontUrl/api/Problem/ActiveProblems" -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -Method GET -Body ($body | ConvertTo-Json)).ActiveProblems
+
+    $activeProblems =  (Invoke-restmethod -Uri "$octofrontUrl/api/Problem/ActiveProblems/OctopusServer/$($release.Release.Version)" -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"}).ActiveProblems
 
     return $activeProblems.Count -gt 0
 }
