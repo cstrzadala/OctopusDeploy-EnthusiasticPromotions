@@ -220,8 +220,8 @@ if (Test-Path variable:OctopusParameters) {
     $octofrontUrl = $OctopusParameters["OctofrontUrl"]
     $octopusApiKey = $OctopusParameters["OctopusApiKey"]
 
-    # do the magic
-    Add-Type -Path "$octopusVersioningPath/lib/netstandard2.0/Octopus.Versioning.dll"
+    $candidates = Get-ChildItem -recurse -filter "Octopus.Versioning.dll"
+    Add-Type -Path $candidates[-1].FullName
 
     $progression = Get-FromApi "https://deploy.octopus.app/api/$spaceId/progression/$projectId"
     $channels = Get-FromApi "https://deploy.octopus.app/api/$spaceId/projects/$projectId/channels"
