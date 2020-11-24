@@ -51,6 +51,29 @@ function Get-CurrentDate {
   return Get-Date
 }
 
+function Get-CurrentTimezone {
+    # for mocking
+    return Get-TimeZone
+}
+
+function Get-BrisbaneTimezone {
+    if($IsLinux) {
+        return Get-TimeZone -Id "Australia/Brisbane"
+    }
+
+    return Get-TimeZone -Id "E. Australia Standard Time"
+}
+
+function Test-IsWeekendAEST {
+    $utc = [System.TimeZoneInfo]::ConvertTimeToUtc((Get-CurrentDate), (Get-CurrentTimezone))
+    $dateAEST = [System.TimeZoneInfo]::ConvertTimeFromUtc($utc, (Get-BrisbaneTimezone))
+
+    return ($dateAEST.DayOfWeek -eq "Friday" -and $dateAEST.Hour -ge 16) -or
+            $dateAEST.DayOfWeek -eq "Saturday" -or
+            $dateAEST.DayOfWeek -eq "Sunday" -or
+            ($dateAEST.DayOfWeek -eq "Monday" -and $dateAEST.Hour -lt 8)
+}
+
 function Get-MostRecentDeploymentToEnvironment ($release, $environmentId) {
     $alreadyDeployedEnvironments = [array](Get-AlreadyDeployedEnvironmentIds $release)
     if ($alreadyDeployedEnvironments.Contains($environmentId)) {
@@ -155,6 +178,9 @@ function Get-PromotionCandidates($progression, $channels, $lifecycles) {
                 if (($null -ne $deploymentsToCurrentEnvironment) -and ($deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime) -gt (Get-CurrentDate))) {
                     Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment.CompletedTime) (UTC)"
                     Write-Host " - This release is still baking. Will try again later after $($deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime)) (UTC)."
+                } elseif(Test-IsWeekendAEST) {
+                    # Don't promote after 4pm Friday and 8am Monday morning AEST
+                    Write-Host " - Bake time is complete but we aren't going to promote it as it's between 4pm Friday AEST and 8am Monday AEST. This helps us avoid potential issues with rolling out to lots of customers over the weekend when a large majority of our team is unavailable to assist if something goes wrong."
                 } else {
                     if ($null -eq $deploymentsToCurrentEnvironment) {
                         # not sure this should ever happen

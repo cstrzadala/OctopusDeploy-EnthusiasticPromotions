@@ -30,7 +30,6 @@ Describe 'Enthusiastic promoter' {
 
     $result.Count | should -be 4
 
-
     $result[0].Version | Should -be "2020.4.7"
     $result[0].EnvironmentName | Should -be "Stable"
     $result[0].ChannelName | Should -be "Previous Release - 2020.4"
@@ -135,5 +134,37 @@ Describe 'Enthusiastic promoter' {
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
     $result.Count | should -be 0
+  }
+
+  It 'should not promote during weekend period' -TestCases @( # All written in AEST times
+    @{ datetime = '20/Nov/2020 16:00:00'; shouldPromote = $false} #Friday 4pm
+    @{ datetime = '20/Nov/2020 15:59:59'; shouldPromote = $true} #Friday 3:59pm
+    @{ datetime = '21/Nov/2020 00:00:00'; shouldPromote = $false} #Saturday
+    @{ datetime = '22/Nov/2020 00:00:00'; shouldPromote = $false} #Sunday
+    @{ datetime = '23/Nov/2020 07:59:59'; shouldPromote = $false} #Monday 7:59am
+    @{ datetime = '23/Nov/2020 08:00:00'; shouldPromote = $true} #Monday 8:00am
+  ) {
+    param
+    (
+      [string] $dateTime,
+      [boolean] $shouldPromote
+    )
+
+    $timezone = "E. Australia Standard Time";
+    if($IsLinux) {
+      $timezone = "Australia/Brisbane"
+    }
+
+    Mock Test-PipelineBlocked { $false }
+    Mock Get-CurrentTimezone { return Get-TimeZone -Id $timezone }
+    Mock Get-CurrentDate { return [System.DateTime]::Parse($dateTime) }
+
+    $progression = (Get-Content -Path "SampleData/sample3.json" -Raw) | ConvertFrom-Json
+    $channels = (Get-Content -Path "SampleData/channels.json" -Raw) | ConvertFrom-Json
+
+    $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
+
+    ($result.Count -gt 0) | should -be $shouldPromote
+
   }
 }
