@@ -215,7 +215,7 @@ function Get-PromotionCandidates($progression, $channels, $lifecycles) {
 
 function Get-FromApi($url) {
     Write-Verbose "Getting response from $url"
-    $result = Invoke-restmethod -Uri $url -Headers @{ 'X-Octopus-ApiKey' = $octopusApiKey }
+    $result = Invoke-restmethod -Uri $url -Headers @{ 'X-Octopus-ApiKey' = $enthusiasticPromoterApiKey }
 
     # log out the  json, so we can diagnose what's happening / write a test for it
     write-verbose "--------------------------------------------------------"
@@ -237,7 +237,7 @@ function Promote-Releases($promotionCandidates) {
             write-host "--------------------------------------------------------"
             Write-Host " - Promoting release '$($promotionCandidate.Version)' to environment '$($promotionCandidate.EnvironmentName)' ($($promotionCandidate.EnvironmentId))."
             write-host "--------------------------------------------------------"
-            & $octopusToolsPath\tools\octo.exe deploy-release --deployTo $promotionCandidate.EnvironmentId --version $promotionCandidate.Version --project "$projectName" --apiKey $OctopusApiKey --server "https://deploy.octopus.app" --space "Octopus Server"
+            & $octopusToolsPath\tools\octo.exe deploy-release --deployTo $promotionCandidate.EnvironmentId --version $promotionCandidate.Version --project "$projectName" --apiKey $enthusiasticPromoterApiKey --server "https://deploy.octopus.app" --space "Octopus Server"
         }
     }
     write-host "--------------------------------------------------------"
@@ -256,7 +256,7 @@ if (Test-Path variable:OctopusParameters) {
     #variables from the project
     $octofrontApiKey = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
     $octofrontUrl = $OctopusParameters["OctofrontUrl"]
-    $octopusApiKey = $OctopusParameters["OctopusApiKey"]
+    $enthusiasticPromoterApiKey = $OctopusParameters["EnthusiasticPromoterApiKey"]
 
     $candidates = Get-ChildItem -recurse -filter "Octopus.Versioning.dll"
     Add-Type -Path $candidates[-1].FullName
