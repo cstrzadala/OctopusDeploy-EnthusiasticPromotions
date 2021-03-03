@@ -179,6 +179,49 @@ Describe 'Enthusiastic promoter' {
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
     ($result.Count -gt 0) | should -be $shouldPromote
+  }
 
+  Describe 'Invoke-WithRetry' {
+    It 'It stops retries'  {
+      $script:counter = 0
+      {
+          Invoke-WithRetry -ScriptBlock {
+            $script:counter++;
+            throw "Test error"
+          } -MaxRetries 2 -InitialBackoffInMs 1
+      } | Should -Throw
+
+      $script:counter | Should -be 3
+    }
+
+    It "Does not retry" {
+      $script:counter = 0;
+      {
+          Invoke-WithRetry {
+          $script:counter++;
+          throw "Test exception"
+          } -MaxRetries 0
+      } | Should -Throw
+
+      $script:counter | Should -be 1
+    }
+
+    It "Works with blocks that do not return value" {
+      $script:counter = 0
+      Invoke-WithRetry {
+          $script:counter++;
+          Write-Host "Test"
+      }
+
+      $script:counter | Should -be 1
+    }
+
+    It "Works with blocks that return value" {
+      $value = 12345;
+      $returnValue = Invoke-WithRetry {
+          return $value;
+      }
+      $returnValue | Should -be $value
+    }
   }
 }
