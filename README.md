@@ -5,6 +5,10 @@ This script is used as a runbook within the Octopus Server project which is run 
 
 At Octopus, we're want green builds to mean that they're ready for release, which is part of why we have enthusiastic promotions now - developers can spend less time getting builds ready for customers and we can ship smaller, more often and to our own environments first so if things go wrong, we can catch them early and protect our customers. 
 
+# Publishing
+
+When pushing to main, this workflow will run: https://github.com/OctopusDeploy/OctopusDeploy-EnthusiasticPromotions/blob/main/.github/workflows/BuildTestPackagePush.yml. It runs the tests, packs the script, pushes it to octopus and re-publishes the runbook. Therefore, any pushes to the main branch will result in the runbook being updated automatically. 
+
 # Contributing
 Firstly, thanks for contributing! :tada:
 
