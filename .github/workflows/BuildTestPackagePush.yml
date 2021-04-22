@@ -14,19 +14,25 @@ env:
     OCTOPUS_SPACE_NAME: "Octopus Server"
     OCTOPUS_PROJECT_NAME: "Octopus Server"
     OCTOPUS_ENTHUSIASTIC_PROMOTIONS_RUNBOOK_NAME: "Enthusiastic Promotions"
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-        
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Australia/Brisbane"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Install Pester
         id: install-pester
         run: Install-Module "Pester" -Force
         shell: pwsh
-       
+
       - name: Run Pester Tests
         id: pester-tests
         run: |
@@ -39,19 +45,19 @@ jobs:
       - name: Set version
         id: set-version
         run: echo "PACKAGE_VERSION=$PACKAGE_PREFIX.$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
-    
+
       - name: Make package directories
-        run: mkdir -p ./packagesoutput/$OCTOPUS_PACKAGE_NAME    
-      
+        run: mkdir -p ./packagesoutput/$OCTOPUS_PACKAGE_NAME
+
       - name: Move PS script to build folder
         id: move-ps-script-to-build-folder
         run: cp ./enthusiastic-promoter.ps1 ./packagesoutput/$OCTOPUS_PACKAGE_NAME
-    
+
       - name: Install Octo CLI
         uses: OctopusDeploy/install-octopus-cli-action@main
         with:
           version: latest
-          
+
       - name: Package
         run: octo pack --id="$OCTOPUS_PACKAGE_NAME" --format="Zip" --version="$PACKAGE_VERSION" --basePath="./packagesoutput/$OCTOPUS_PACKAGE_NAME" --outFolder="./packages"
 
