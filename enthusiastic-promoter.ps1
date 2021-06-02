@@ -306,12 +306,12 @@ function Test-IsPromotionCandidate {
         $minimumTimeBetweenDeployments = $waitTimeForEnvironmentLookup[$nextEnvironmentId].MinimumTimeBetweenDeployments
         $mostRecentDeploymentToNextEnvironment = Get-MostRecentDeploymentToEnvironment $mostRecentReleaseDeployedToNextEnvironment $nextEnvironmentId
         if ($null -eq $mostRecentDeploymentToNextEnvironment.CompletedTime) {
-            Write-Host " - Release '$($release.Release.Version)' is valid for deployment, but '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' has not yet completed. Will try again later."
+            Write-Host " - Release '$($release.Release.Version)' is blocked as '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' has not yet completed. Will try again later."
         } else {
             $ageOfLastDeployment = Format-Timespan (Get-CurrentDate).Subtract($mostRecentDeploymentToNextEnvironment.CompletedTime)
             $retryTime = $mostRecentDeploymentToNextEnvironment.CompletedTime.Add($minimumTimeBetweenDeployments)
             $formattedMinimumTimeBetweenDeployments = Format-Timespan $minimumTimeBetweenDeployments
-            Write-Host " - Release '$($release.Release.Version)' is valid for deployment, but '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' was deployed recently ($ageOfLastDeployment ago, which is within the last $formattedMinimumTimeBetweenDeployments)."
+            Write-Host " - Release '$($release.Release.Version)' is blocked as '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' was deployed recently ($ageOfLastDeployment ago, which is within the last $formattedMinimumTimeBetweenDeployments)."
             $currDate = Get-CurrentDate
             $retryTimeSpan = Format-TimeSpan $retryTime.Subtract($currDate)
             Write-Host " - Will try again later after $($retryTime.ToString("R")) (in $retryTimeSpan)."
