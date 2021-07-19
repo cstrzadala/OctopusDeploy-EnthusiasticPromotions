@@ -76,7 +76,7 @@ function Test-PipelineBlocked($release) {
     {
         $activeProblemsCount = Invoke-WithRetry -ScriptBlock {
             Write-Verbose "Getting response from $url"
-            $activeProblems =  (Invoke-restmethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"}).ActiveProblems
+            $activeProblems =  (Invoke-RestMethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -TimeoutSec 60 -MaximumRetryCount 2 -RetryIntervalSec 10).ActiveProblems
 
             # log out the  json, so we can diagnose what's happening / write a test for it
             write-verbose "--------------------------------------------------------"
@@ -380,7 +380,7 @@ function Get-PromotionCandidates($progression, $channels) {
 
 function Get-FromApi($url) {
     Write-Verbose "Getting response from $url"
-    $result = Invoke-restmethod -Uri $url -Headers @{ 'X-Octopus-ApiKey' = $enthusiasticPromoterApiKey }
+    $result = Invoke-RestMethod -Uri $url -Headers @{ 'X-Octopus-ApiKey' = $enthusiasticPromoterApiKey } -TimeoutSec 60 -RetryIntervalSec 10 -MaximumRetryCount 2
 
     # log out the  json, so we can diagnose what's happening / write a test for it
     write-verbose "--------------------------------------------------------"
