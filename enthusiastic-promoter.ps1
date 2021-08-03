@@ -239,7 +239,8 @@ function Test-ShouldLimitDeploymentsToEnvironment($nextEnvironmentId, $mostRecen
     if ($null -eq $mostRecentDeploymentToNextEnvironment.CompletedTime) {
         return $true
     }
-    return ($mostRecentDeploymentToNextEnvironment.CompletedTime.Add($minimumTimeBetweenDeployments) -gt (Get-CurrentDate))
+
+    return ([DateTime]::Parse($mostRecentDeploymentToNextEnvironment.CompletedTime).Add($minimumTimeBetweenDeployments) -gt (Get-CurrentDate))
 }
 
 function Format-Timespan([System.TimeSpan] $timespan) {
@@ -308,8 +309,8 @@ function Test-IsPromotionCandidate {
         if ($null -eq $mostRecentDeploymentToNextEnvironment.CompletedTime) {
             Write-Host " - Release '$($release.Release.Version)' is blocked as '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' has not yet completed. Will try again later."
         } else {
-            $ageOfLastDeployment = Format-Timespan (Get-CurrentDate).Subtract($mostRecentDeploymentToNextEnvironment.CompletedTime)
-            $retryTime = $mostRecentDeploymentToNextEnvironment.CompletedTime.Add($minimumTimeBetweenDeployments)
+            $ageOfLastDeployment = Format-Timespan (Get-CurrentDate).Subtract([DateTime]::Parse($mostRecentDeploymentToNextEnvironment.CompletedTime))
+            $retryTime = [DateTime]::Parse($mostRecentDeploymentToNextEnvironment.CompletedTime).Add($minimumTimeBetweenDeployments)
             $formattedMinimumTimeBetweenDeployments = Format-Timespan $minimumTimeBetweenDeployments
             Write-Host " - Release '$($release.Release.Version)' is blocked as '$($mostRecentReleaseDeployedToNextEnvironment.Release.Version)' was deployed recently ($ageOfLastDeployment ago, which is within the last $formattedMinimumTimeBetweenDeployments)."
             $currDate = Get-CurrentDate
@@ -330,10 +331,10 @@ function Test-IsPromotionCandidate {
     Write-Host " - Calculated the bake time that releases should stay in environment '$currentEnvironmentName' before being promoted to '$nextEnvironmentName' to be $formattedBakeTime."
 
     $deploymentsToCurrentEnvironment = Get-MostRecentDeploymentToEnvironment $release $currentEnvironmentId
-    if (($null -ne $deploymentsToCurrentEnvironment) -and ($deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime) -gt (Get-CurrentDate))) {
-        $ageOfLastDeployment = Format-Timespan (Get-CurrentDate).Subtract($deploymentsToCurrentEnvironment.CompletedTime)
-        Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment.CompletedTime.ToString("R")) ($ageOfLastDeployment ago)"
-        $retryTime = $deploymentsToCurrentEnvironment.CompletedTime.Add($bakeTime)
+    if (($null -ne $deploymentsToCurrentEnvironment) -and ([DateTime]::Parse($deploymentsToCurrentEnvironment.CompletedTime).Add($bakeTime) -gt (Get-CurrentDate))) {
+        $ageOfLastDeployment = Format-Timespan (Get-CurrentDate).Subtract([DateTime]::Parse($deploymentsToCurrentEnvironment.CompletedTime))
+        Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment.CompletedTime) ($ageOfLastDeployment ago)"
+        $retryTime = [DateTime]::Parse($deploymentsToCurrentEnvironment.CompletedTime).Add($bakeTime)
         $currDate = Get-CurrentDate
         $retryTimeSpan = Format-TimeSpan $retryTime.Subtract($currDate)
         Write-Host " - This release is still baking. Will try again later after $($retryTime.ToString("R")) (in $retryTimeSpan)."
@@ -349,7 +350,7 @@ function Test-IsPromotionCandidate {
         # not sure this should ever happen
         Write-Warning " - Bake time was ignored as there was no deployments to the environment $currentEnvironmentName"
     } else {
-        Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment[0].CompletedTime.ToString("R")). Release has completed baking."
+        Write-Host " - Completion time of last deployment to $currentEnvironmentName was $([DateTime]::Parse($deploymentsToCurrentEnvironment[0].CompletedTime).ToString("R")). Release has completed baking."
     }
     Write-Host " - Checking Andon cord to see if release pipeline is blocked..."
     if (Test-PipelineBlocked $release) {

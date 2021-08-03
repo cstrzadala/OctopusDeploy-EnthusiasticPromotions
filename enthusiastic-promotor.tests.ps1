@@ -74,7 +74,6 @@ Describe 'Enthusiastic promoter' {
 
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
-    $result.Count | should -be 1
 
     # 2020.4.7 is in a holding pattern to avoid too much downtime during upgrades on Octopus Cloud
     # 2020.6.0-ci0026 is still baking
@@ -138,7 +137,6 @@ Describe 'Enthusiastic promoter' {
 
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
-    $result.Count | should -be 1
 
     $result[0].Version | Should -be "2020.5.9"
     $result[0].EnvironmentName | Should -be "Production"
@@ -164,7 +162,6 @@ Describe 'Enthusiastic promoter' {
 
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
-    $result.Count | should -be 1
 
     $result[0].Version | Should -be "2021.1.6969"
     $result[0].EnvironmentName | Should -be "Friends of Octopus"
