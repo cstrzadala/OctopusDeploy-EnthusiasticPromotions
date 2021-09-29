@@ -1,4 +1,16 @@
-
+[CmdletBinding()]
+param (
+  # these params get overridden if a $OctopusParameters hashtable is provided
+  [Parameter()][string]$spaceId,
+  [Parameter()][string]$projectId,
+  [Parameter()][string]$octopusToolsPath,
+  [Parameter()][string]$octopusVersioningPath,
+  [Parameter()][string]$octofrontApiKey,
+  [Parameter()][string]$octofrontUrl,
+  [Parameter()][string]$enthusiasticPromoterApiKey,
+  [Parameter()][string]$octopusServerUrl,
+  [Parameter()][switch]$dryRun = $false
+)
 Set-StrictMode -Version "Latest";
 $ErrorActionPreference = "Stop";
 $ConfirmPreference = "None";
@@ -408,23 +420,37 @@ function Promote-Releases($promotionCandidates) {
     write-host "--------------------------------------------------------"
 }
 
+function Test-AnyArgsPassed {
+  return $spaceId -or $projectId -or $octopusToolsPath -or $octopusVersioningPath -or $octofrontApiKey -or $octofrontUrl -or $enthusiasticPromoterApiKey -or $octopusServerUrl
+}
+function Test-AllArgsPassed {
+  return $spaceId -and $projectId -and $octopusToolsPath -and $octopusVersioningPath -and $octofrontApiKey -and $octofrontUrl -and $enthusiasticPromoterApiKey -and $octopusServerUrl
+}
+
 if (Test-Path variable:OctopusParameters) {
-    #automatically provided variables
-    $projectName = $OctopusParameters["Octopus.Project.Name"]
-    $spaceId = $OctopusParameters["Octopus.Space.Id"]
-    $projectId = $OctopusParameters["Octopus.Project.Id"]
+  Write-Host "Reading parameters from `$OctopusParameters"
+  $spaceId                    = $OctopusParameters["Octopus.Space.Id"]
+  $projectId                  = $OctopusParameters["Octopus.Project.Id"]
 
-    #variables provided from additional packages
-    $octopusToolsPath = $OctopusParameters["Octopus.Action.Package[OctopusTools].ExtractedPath"]
+  #variables provided from additional packages
+  $octopusToolsPath           = $OctopusParameters["Octopus.Action.Package[OctopusTools].ExtractedPath"]
+  $octopusVersioningPath      = $OctopusParameters["Octopus.Action.Package[Octopus.Versioning].ExtractedPath"]
 
-    #variables from the project
-    $octofrontApiKey = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
-    $octofrontUrl = $OctopusParameters["OctofrontUrl"]
-    $enthusiasticPromoterApiKey = $OctopusParameters["EnthusiasticPromoterApiKey"]
-    $octopusServerUrl = $OctopusParameters["Octopus.Web.ServerUri"]
+  #variables from the project
+  $octofrontApiKey            = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
+  $octofrontUrl               = $OctopusParameters["OctofrontUrl"]
+  $enthusiasticPromoterApiKey = $OctopusParameters["EnthusiasticPromoterApiKey"]
+  $octopusServerUrl           = $OctopusParameters["Octopus.Web.ServerUri"]
+} elseif (Test-AllArgsPassed) {
+  Write-Host "Reading parameters from command line args"
+} elseif (Test-AnyArgsPassed) {
+  Write-Warning "Some command line args have been passed, but some are missing. Please validated the args you are passing!"
+  exit 1
+}
 
+if (Test-AllArgsPassed) {
     try {
-        $candidates = Get-ChildItem -recurse -filter "Octopus.Versioning.dll"
+        $candidates = Get-ChildItem -Path $octopusVersioningPath -recurse -filter "Octopus.Versioning.dll"
         Add-Type -Path $candidates[-1].FullName
 
         $progression = Get-FromApi "$octopusServerUrl/api/$spaceId/progression/$($projectId)?releaseHistoryCount=100"
@@ -443,5 +469,9 @@ if (Test-Path variable:OctopusParameters) {
         exit 1
     }
 
-    Promote-Releases $promotionCandidates
+    if ($dryRun) {
+        Write-Host "Skipping release promition as we are doing a dry run"
+    } else {
+        Promote-Releases $promotionCandidates
+    }
 }
