@@ -16,17 +16,94 @@ $ErrorActionPreference = "Stop";
 $ConfirmPreference = "None";
 trap { Write-Error $_ -ErrorAction Continue; exit 1 }
 
+Add-Type -TypeDefinition @"
+   public enum ProblemCheckType
+   {
+      NoCheck,
+      CheckIfDeploymentsToBranchTrackingInstancesAreAllowed,
+      CheckIfDeploymentsToThisUpgradeRingAreAllowed,
+      CheckForAnyProblems
+   }
+"@
+
 #lookup table for "how long the release needs to be in the specified environment, before allowing it to move on"
 $waitTimeForEnvironmentLookup = @{
-    "Environments-2583" = @{ "Name" = "Branch Instances (Staging)"; "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Hours 2;   "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $false; }
-    "Environments-2621" = @{ "Name" = "Octopus Cloud Tests";        "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0; "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $false; }
-    "Environments-2601" = @{ "Name" = "Production";                 "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0; "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $false; }
-    "Environments-2584" = @{ "Name" = "Branch Instances (Prod)";    "BakeTime" = New-TimeSpan -Days 1;    "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;    "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $true; }
-    "Environments-2585" = @{ "Name" = "Staff";                      "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;    "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $true; }
-    "Environments-2586" = @{ "Name" = "Friends of Octopus";         "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;    "MinimumTimeBetweenDeployments" = New-TimeSpan -Hours 12;  "PreventDeploymentsOnWeekends" = $true; }
-    "Environments-2587" = @{ "Name" = "Early Adopters";             "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Days 7;    "MinimumTimeBetweenDeployments" = New-TimeSpan -Days 3;    "PreventDeploymentsOnWeekends" = $true; }
-    "Environments-2588" = @{ "Name" = "Stable";                     "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Days 7;    "MinimumTimeBetweenDeployments" = New-TimeSpan -Days 7;    "PreventDeploymentsOnWeekends" = $true; }
-    "Environments-2589" = @{ "Name" = "General Availablilty";       "BakeTime" = New-TimeSpan -Minutes 0; "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0; "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0; "PreventDeploymentsOnWeekends" = $true; }
+    "Environments-2583" = @{
+                                "Name" = "Branch Instances (Staging)";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Hours 2;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $false;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToBranchTrackingInstancesAreAllowed;
+                            }
+    "Environments-2621" = @{
+                                "Name" = "Octopus Cloud Tests";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $false;
+                                "ProblemCheckType" = [ProblemCheckType]::NoCheck;
+                            }
+    "Environments-2601" = @{
+                                "Name" = "Production";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $false;
+                                "ProblemCheckType" = [ProblemCheckType]::NoCheck;
+                            }
+    "Environments-2584" = @{
+                                "Name" = "Branch Instances (Prod)";
+                                "BakeTime" = New-TimeSpan -Days 1;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToBranchTrackingInstancesAreAllowed;
+                            }
+    "Environments-2585" = @{
+                                "Name" = "Staff";
+                                "RingName" = "Staff";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
+                            }
+    "Environments-2586" = @{
+                                "Name" = "Friends of Octopus";
+                                "RingName" = "FriendsOfOctopus";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Hours 12;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
+                            }
+    "Environments-2587" = @{
+                                "Name" = "Early Adopters";
+                                "RingName" = "EarlyAdopters";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 7;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Days 3;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
+                            }
+    "Environments-2588" = @{
+                                "Name" = "Stable";
+                                "RingName" = "Stable";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 7;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Days 7;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
+                            }
+    "Environments-2589" = @{
+                                "Name" = "General Availablilty";
+                                "BakeTime" = New-TimeSpan -Minutes 0;
+                                "StabilizationPhaseBakeTime" = New-TimeSpan -Minutes 0;
+                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Minutes 0;
+                                "PreventDeploymentsOnWeekends" = $true;
+                                "ProblemCheckType" = [ProblemCheckType]::CheckForAnyProblems;
+                            }
 }
 
 function Invoke-WithRetry {
@@ -82,33 +159,44 @@ function Invoke-WithRetry {
     return $returnvalue
 }
 
-function Test-PipelineBlocked($release) {
+function Test-PipelineBlocked($release, $nextEnvironmentId) {
     $url = "$octofrontUrl/api/Problem/ActiveProblems/OctopusServer/$($release.Release.Version)"
     try
     {
-        $activeProblemsCount = Invoke-WithRetry -ScriptBlock {
+        $activeProblems = Invoke-WithRetry -ScriptBlock {
             Write-Verbose "Getting response from $url"
-            $activeProblems =  (Invoke-RestMethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -TimeoutSec 60 -MaximumRetryCount 2 -RetryIntervalSec 10).ActiveProblems
+            $result = (Invoke-RestMethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -TimeoutSec 60 -MaximumRetryCount 2 -RetryIntervalSec 10).ActiveProblems
 
             # log out the  json, so we can diagnose what's happening / write a test for it
             write-verbose "--------------------------------------------------------"
             write-verbose "response:"
             write-verbose "--------------------------------------------------------"
-            write-verbose ($activeProblems | ConvertTo-Json -depth 10)
+            write-verbose ($result | ConvertTo-Json -depth 10)
             write-verbose "--------------------------------------------------------"
 
-            return $activeProblems.Count
+            return $result
         }
 
-        return $activeProblemsCount -gt 0
+        $lookup = $waitTimeForEnvironmentLookup[$nextEnvironmentId]
 
+        if ($lookup.ProblemCheckType -eq [ProblemCheckType]::NoCheck) {
+          return $false;
+        } elseif ($lookup.ProblemCheckType -eq [ProblemCheckType]::CheckForAnyProblems) {
+          return $activeProblems.Count -gt 0
+        } elseif ($lookup.ProblemCheckType -eq [ProblemCheckType]::CheckIfDeploymentsToBranchTrackingInstancesAreAllowed) {
+          return @($activeProblems | where-object { $_.AllowDeploymentsToBranchTrackingInstances -eq $false }).Count -gt 0
+        } elseif ($lookup.ProblemCheckType -eq [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed) {
+          return @($activeProblems | where-object { -not ($_.AllowDeploymentsToUpgradeRings.Contains($lookup.RingName)) }).Count -gt 0
+        } else {
+          Write-Error "Unexpected ProblemCheckType '$($lookup.ProblemCheckType)'"
+          exit 1
+        }
     } catch {
         Write-Error "Unable to reach $url to check if there are any active problems - aborting promotion to be safe. Please investigate as to why Octofront is uncontactable." -ErrorAction Continue
         Write-Error $_.Exception.ToString()  -ErrorAction Continue
 
         return $true
     }
-
 }
 
 function Get-CurrentEnvironment($progression, $release) {
@@ -364,7 +452,7 @@ function Test-IsPromotionCandidate {
         Write-Host " - Completion time of last deployment to $currentEnvironmentName was $($deploymentsToCurrentEnvironment[0].CompletedTime.ToString("R")). Release has completed baking."
     }
     Write-Host " - Checking Andon cord to see if release pipeline is blocked..."
-    if (Test-PipelineBlocked $release) {
+    if (Test-PipelineBlocked $release $nextEnvironmentId) {
         Write-Host " - Release pipeline is currently blocked with problems. Release will not be promoted."
         return $nonCandidateResult
     }

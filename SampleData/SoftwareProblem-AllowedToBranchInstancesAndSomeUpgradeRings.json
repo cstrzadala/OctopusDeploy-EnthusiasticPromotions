@@ -1,0 +1,22 @@
+[
+    {
+        "Id": "SoftwareReleaseProblems-11721",
+        "SoftwareProduct": "OctopusServer",
+        "Title": "my test problem",
+        "Description": "it's a problem",
+        "ActiveState": "Open",
+        "LatestStateChangeEventDateTime": "2021-09-29T08:11:05.271749Z",
+        "AffectedVersionRanges":
+        [],
+        "AllowDeploymentsToBranchTrackingInstances": true,
+        "AllowDeploymentsToUpgradeRings":
+        [
+            "EarlyAdopters",
+            "Staff"
+        ],
+        "History": [],
+        "CreatedDate": "2021-09-29T13:56:03.03",
+        "ResolutionDescription": null,
+        "CreatorEmail": "user@example.com"
+    }
+]

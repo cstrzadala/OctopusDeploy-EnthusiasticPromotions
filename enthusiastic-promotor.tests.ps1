@@ -202,6 +202,140 @@ Describe 'Enthusiastic promoter' {
     ($null -ne $result) | should -be $shouldPromote
   }
 
+  Describe 'Test-PipelineBlocked' {
+    It 'should prevent deployments if no allowances' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $true; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-NoAllowances.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+
+    It 'should allow deployments to branch instances if allowed' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $false; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstances.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+
+    It 'should allow deployments to some upgrade rings if allowed' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $true; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+
+    It 'should allow deployments to branch instances and some upgrade rings if allowed' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $false; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstancesAndSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+
+    It 'should prevent deployments if multiple problems (one which allows deployments to branch instances and some upgrade rings) and some with no allowances' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $true; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-OneProblemHasNoAllowances.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+
+    It 'should allow deployments if no problems' -TestCases @(
+      @{ environmentId = "Environments-2583"; expectBlocked = $false; } # Branch Instances (Staging)
+      @{ environmentId = "Environments-2621"; expectBlocked = $false; } # Octopus Cloud Tests
+      @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
+      @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
+      @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
+      @{ environmentId = "Environments-2586"; expectBlocked = $false; } # Friends of Octopus
+      @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
+      @{ environmentId = "Environments-2588"; expectBlocked = $false; } # Stable
+      @{ environmentId = "Environments-2589"; expectBlocked = $false; } # General Availablilty
+    ) {
+      param
+      (
+        [string]$environmentId,
+        [bool]$expectBlocked
+      )
+      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-NoProblems.json" -Raw) | ConvertFrom-Json) }
+      $release = @{ Release = @{ Version = "2020.3.2178" } }
+      $result = Test-PipelineBlocked $release $environmentId
+      "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
+    }
+  }
+
   Describe 'Invoke-WithRetry' {
     It 'It stops retries'  {
       $script:counter = 0
