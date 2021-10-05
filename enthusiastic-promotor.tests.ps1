@@ -219,7 +219,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-NoAllowances.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-NoAllowances.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
@@ -241,7 +241,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstances.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstances.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
@@ -263,7 +263,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-AllowedToSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
@@ -285,7 +285,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstancesAndSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-AllowedToBranchInstancesAndSomeUpgradeRings.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
@@ -307,7 +307,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-OneProblemHasNoAllowances.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-OneProblemHasNoAllowances.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
@@ -329,7 +329,7 @@ Describe 'Enthusiastic promoter' {
         [string]$environmentId,
         [bool]$expectBlocked
       )
-      Mock Invoke-WithRetry { return ,@((Get-Content -Path "SampleData/SoftwareProblem-NoProblems.json" -Raw) | ConvertFrom-Json) }
+      Mock Invoke-WithRetry { return ((Get-Content -Path "SampleData/SoftwareProblem-NoProblems.json" -Raw) | ConvertFrom-Json) }
       $release = @{ Release = @{ Version = "2020.3.2178" } }
       $result = Test-PipelineBlocked $release $environmentId
       "$environmentId|$result" | should -be "$environmentId|$expectBlocked"
