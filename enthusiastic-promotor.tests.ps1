@@ -96,15 +96,23 @@ Describe 'Enthusiastic promoter' {
   }
 
   It 'should choose the stabilisation phase for channels using the Current Release (prior to going GA) lifecycle' {
-    $channels = (Get-Content -Path "SampleData/channels.json" -Raw) | ConvertFrom-Json
+    $channels = (Get-Content -Path "SampleData/channels-reduced.json" -Raw) | ConvertFrom-Json
 
-    $channelId = "Channels-4583" #'Latest Release - 2020.5', uses lifecycle Lifecycles-1667 'Current Release (prior to going GA)'
-    $result = Test-ReleaseInStabilizationPhase $channelId $channels
-    $result | Should -be $true
-
-    $channelId = "Channels-4449" #'Previous Release - 2020.4', uses lifecycle Lifecycles-1669 'Previous Release (prior to new release going GA)'
+    $channelId = "Channels-4448" #'2021.1 - Previous Release', uses lifecycle 1668 'LTS Release Branch'
     $result = Test-ReleaseInStabilizationPhase $channelId $channels
     $result | Should -be $false
+
+    $channelId = "Channels-4946" #'2021.2 - Previous Release', uses lifecycle 1668 'LTS Release Branch'
+    $result = Test-ReleaseInStabilizationPhase $channelId $channels
+    $result | Should -be $false
+
+    $channelId = "Channels-4447" #'Branch Builds', uses lifecycle 1665 'Branch Builds'
+    $result = Test-ReleaseInStabilizationPhase $channelId $channels
+    $result | Should -be $false
+
+    $channelId = "Channels-5303" #'Main Line (master)', uses lifecycle 1667 'Mainline'
+    $result = Test-ReleaseInStabilizationPhase $channelId $channels
+    $result | Should -be $true
   }
 
   It 'should handle a modified lifecycle where an earlier phase is added' {

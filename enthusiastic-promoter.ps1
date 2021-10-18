@@ -315,11 +315,8 @@ function Test-ReleaseInStabilizationPhase($channelId, $channels) {
 
     switch ($channel.LifecycleId) {
         "Lifecycles-1665" { return $false; } # Branch Builds
-        "Lifecycles-1670" { return $false; } # CI Builds
-        "Lifecycles-1666" { return $false; } # Current Release (after going GA)
-        "Lifecycles-1667" { return $true;  } # Current Release (prior to going GA)
+        "Lifecycles-1667" { return $true;  } # Mainline
         "Lifecycles-1668" { return $false; } # LTS Release Branch
-        "Lifecycles-1669" { return $false; } # Previous Release (prior to new release going GA)
     }
     # unknown lifecycle - let's default to slow... safe by default.
     return $true;
