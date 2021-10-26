@@ -134,7 +134,7 @@
         "ReleaseNotes": "",
         "ProjectDeploymentProcessSnapshotId": "deploymentprocess-Projects-4224-s-200-75TDK",
         "IgnoreChannelRules": false,
-        "Assembled": "2021-02-25Thh:mm:ss.81+00:00",
+        "Assembled": "2021-02-25T10:16:55.81+00:00",
         "ProjectId": "Projects-4224",
         "LibraryVariableSetSnapshotIds": [
           "variableset-LibraryVariableSets-921-s-2-VPUL3"
@@ -235,10 +235,10 @@
             "TenantId": null,
             "ChannelId": "Channels-4583",
             "ReleaseVersion": "2020.5.9",
-            "Created": "2021-02-25Thh:mm:ss.235+00:00",
-            "QueueTime": "2021-02-25Thh:mm:ss.236+00:00",
-            "StartTime": "2021-02-25Thh:mm:ss.657+00:00",
-            "CompletedTime": "2021-02-25Thh:mm:ss.219+00:00",
+            "Created": "2021-02-25T05:06:55.235+00:00",
+            "QueueTime": "2021-02-25T05:06:55.236+00:00",
+            "StartTime": "2021-02-25T05:06:55.657+00:00",
+            "CompletedTime": "2021-02-25T05:06:56.219+00:00",
             "State": "Success",
             "HasPendingInterruptions": false,
             "HasWarningsOrErrors": true,
@@ -272,7 +272,7 @@
         "ProjectDeploymentProcessSnapshotId": "deploymentprocess-Projects-4224-s-200-75TDK",
         "IgnoreChannelRules": false,
         "BuildInformation": [],
-        "Assembled": "2021-02-22Thh:mm:ss.889+00:00",
+        "Assembled": "2021-02-22T05:06:57.889+00:00",
         "ProjectId": "Projects-4224",
         "LibraryVariableSetSnapshotIds": [
           "variableset-LibraryVariableSets-921-s-2-VPUL3"

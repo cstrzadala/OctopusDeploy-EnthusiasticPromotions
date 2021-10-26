@@ -142,7 +142,7 @@ Describe 'Enthusiastic promoter' {
     Mock Test-PipelineBlocked { return $false; }
     $progression = (Get-Content -Path "SampleData/sample6.json" -Raw) | ConvertFrom-Json
     $channels = (Get-Content -Path "SampleData/channels.json" -Raw) | ConvertFrom-Json
-    Mock Get-CurrentDate { return [System.DateTime]::Parse("05/Feb/2021 1:08:20 AM") }
+    Mock Get-CurrentDate { return [System.DateTime]::Parse("25/Feb/2021 10:08:20 PM") }
 
     $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
 
@@ -177,6 +177,22 @@ Describe 'Enthusiastic promoter' {
     $result[0].Version | Should -be "2021.1.6969"
     $result[0].EnvironmentName | Should -be "Friends of Octopus"
     $result[0].ChannelName | Should -be "Latest Release - 2021.1"
+  }
+
+  It 'should evaluate current environment correctly' {
+    # see https://octopusdeploy.slack.com/archives/C012VMX1YMQ/p1635199339038600
+    Mock Test-PipelineBlocked { return $false }
+    Mock Get-CurrentDate { return [System.DateTime]::Parse("26/Oct/2021 10:00:00 AM") }
+    $progression = (Get-Content -Path "SampleData/sample9-progression.json" -Raw) | ConvertFrom-Json
+    $channels = (Get-Content -Path "SampleData/sample9-channels.json" -Raw) | ConvertFrom-Json
+
+    $result = $((Get-PromotionCandidates $progression $channels).Values) | sort-object -property Version
+
+    $result.Count | should -be 1
+
+    $result[0].Version | Should -be "2021.3.6806"
+    $result[0].EnvironmentName | Should -be "Friends of Octopus"
+    $result[0].ChannelName | Should -be "Main Line (master)"
   }
 
   It 'should not promote during weekend period' -TestCases @( # All written in AEST times

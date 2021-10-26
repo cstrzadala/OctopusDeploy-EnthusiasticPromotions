@@ -204,8 +204,9 @@ function Get-CurrentEnvironment($progression, $release) {
     if ($release.NextDeployments.Length -eq 0) { return $null }
     $nextEnvironmentId = $release.NextDeployments[0]
     $channelId = $release.Release.ChannelId
-    $channelEnvironments = ((,$progression.ChannelEnvironments.PSObject.Properties | where-object { $_.Name -eq $channelId }).Value)
+    $channelEnvironments = (,($progression.ChannelEnvironments.PSObject.Properties | where-object { $_.Name -eq $channelId })).Value
     $selectedEnvironmentId = $null
+    if ( ($channelEnvironments | where-object {$_.id -eq $nextEnvironmentId}).Count -gt 1) { throw "Unexpectedly found the environment $nextEnvironmentId in the channels more than once?"}
     foreach($environment in $channelEnvironments) {
         if ($environment.Id -eq $nextEnvironmentId) { break; }
         $selectedEnvironmentId = $environment.Id
