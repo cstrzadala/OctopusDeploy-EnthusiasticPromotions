@@ -5,8 +5,8 @@ param (
   [Parameter()][string]$projectId,
   [Parameter()][string]$octopusToolsPath,
   [Parameter()][string]$octopusVersioningPath,
-  [Parameter()][string]$octofrontApiKey,
-  [Parameter()][string]$octofrontUrl,
+  [Parameter()][string]$slipwayApiKey,
+  [Parameter()][string]$slipwayUrl,
   [Parameter()][string]$enthusiasticPromoterApiKey,
   [Parameter()][string]$octopusServerUrl,
   [Parameter()][switch]$dryRun = $false
@@ -160,12 +160,12 @@ function Invoke-WithRetry {
 }
 
 function Test-PipelineBlocked($release, $nextEnvironmentId) {
-    $url = "$octofrontUrl/api/Problem/ActiveProblems/OctopusServer/$($release.Release.Version)"
+    $url = "$slipwayUrl/api/Problem/ActiveProblems/OctopusServer/$($release.Release.Version)"
     try
     {
         $activeProblems = @(Invoke-WithRetry -ScriptBlock {
             Write-Verbose "Getting response from $url"
-            $result = (Invoke-RestMethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($octofrontApiKey)"} -TimeoutSec 60 -MaximumRetryCount 2 -RetryIntervalSec 10).ActiveProblems
+            $result = (Invoke-RestMethod -Uri $url -Headers @{ 'Authorization' = "Bearer $($slipwayApiKey)"} -TimeoutSec 60 -MaximumRetryCount 2 -RetryIntervalSec 10).ActiveProblems
 
             # log out the  json, so we can diagnose what's happening / write a test for it
             $resultAsJson = ConvertTo-Json -depth 10 -InputObject $result
@@ -193,7 +193,7 @@ function Test-PipelineBlocked($release, $nextEnvironmentId) {
           exit 1
         }
     } catch {
-        Write-Error "Unable to reach $url to check if there are any active problems - aborting promotion to be safe. Please investigate as to why Octofront is uncontactable." -ErrorAction Continue
+        Write-Error "Unable to reach $url to check if there are any active problems - aborting promotion to be safe. Please investigate as to why Slipway is uncontactable." -ErrorAction Continue
         Write-Error $_.Exception.ToString()  -ErrorAction Continue
 
         return $true
@@ -508,10 +508,10 @@ function Promote-Releases($promotionCandidates) {
 }
 
 function Test-AnyArgsPassed {
-  return $spaceId -or $projectId -or $octopusToolsPath -or $octopusVersioningPath -or $octofrontApiKey -or $octofrontUrl -or $enthusiasticPromoterApiKey -or $octopusServerUrl
+  return $spaceId -or $projectId -or $octopusToolsPath -or $octopusVersioningPath -or $slipwayApiKey -or $slipwayUrl -or $enthusiasticPromoterApiKey -or $octopusServerUrl
 }
 function Test-AllArgsPassed {
-  return $spaceId -and $projectId -and $octopusToolsPath -and $octopusVersioningPath -and $octofrontApiKey -and $octofrontUrl -and $enthusiasticPromoterApiKey -and $octopusServerUrl
+  return $spaceId -and $projectId -and $octopusToolsPath -and $octopusVersioningPath -and $slipwayApiKey -and $slipwayUrl -and $enthusiasticPromoterApiKey -and $octopusServerUrl
 }
 
 if (Test-Path variable:OctopusParameters) {
@@ -524,8 +524,8 @@ if (Test-Path variable:OctopusParameters) {
   $octopusVersioningPath      = $OctopusParameters["Octopus.Action.Package[Octopus.Versioning].ExtractedPath"]
 
   #variables from the project
-  $octofrontApiKey            = $OctopusParameters["OctofrontSoftwareProblemsAuthToken"]
-  $octofrontUrl               = $OctopusParameters["OctofrontUrl"]
+  $slipwayApiKey            = $OctopusParameters["SlipwaySoftwareProblemsAuthToken"]
+  $slipwayUrl               = $OctopusParameters["SlipwayUrl"]
   $enthusiasticPromoterApiKey = $OctopusParameters["EnthusiasticPromoterApiKey"]
   $octopusServerUrl           = $OctopusParameters["Octopus.Web.ServerUri"]
 } elseif (Test-AllArgsPassed) {
