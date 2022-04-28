@@ -7,7 +7,7 @@ At Octopus, we're want green builds to mean that they're ready for release, whic
 
 # Publishing
 
-When pushing to main, the [BuildTestPackagePush.taml](https://github.com/OctopusDeploy/OctopusDeploy-EnthusiasticPromotions/blob/main/.github/workflows/BuildTestPackagePush.yml) workflow will run. It runs the tests, packs the script, pushes it to octopus and re-publishes the runbook. Therefore, any pushes to the main branch will result in the runbook being updated automatically. 
+When pushing to main, the [BuildTestPackagePush.yml](https://github.com/OctopusDeploy/OctopusDeploy-EnthusiasticPromotions/blob/main/.github/workflows/BuildTestPackagePush.yml) workflow will run. It runs the tests, packs the script, pushes it to octopus and re-publishes the runbook. Therefore, any pushes to the main branch will result in the runbook being updated automatically. 
 
 # Contributing
 Firstly, thanks for contributing! :tada:
