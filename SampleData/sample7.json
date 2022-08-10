@@ -21,10 +21,6 @@
       "Name": "Staff"
     },
     {
-      "Id": "Environments-2586",
-      "Name": "Friends of Octopus"
-    },
-    {
       "Id": "Environments-2587",
       "Name": "Early Adopters"
     },
@@ -60,10 +56,6 @@
       {
         "Id": "Environments-2584",
         "Name": "Branch Instances (Prod)"
-      },
-      {
-        "Id": "Environments-2586",
-        "Name": "Friends of Octopus"
       },
       {
         "Id": "Environments-2587",
@@ -114,10 +106,6 @@
       {
         "Id": "Environments-2601",
         "Name": "Production"
-      },
-      {
-        "Id": "Environments-2586",
-        "Name": "Friends of Octopus"
       },
       {
         "Id": "Environments-2587",

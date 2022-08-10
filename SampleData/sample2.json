@@ -21,10 +21,6 @@
         "Name": "Staff"
       },
       {
-        "Id": "Environments-2586",
-        "Name": "Friends of Octopus"
-      },
-      {
         "Id": "Environments-2587",
         "Name": "Early Adopters"
       },
@@ -76,10 +72,6 @@
           "Name": "Production"
         },
         {
-          "Id": "Environments-2586",
-          "Name": "Friends of Octopus"
-        },
-        {
           "Id": "Environments-2587",
           "Name": "Early Adopters"
         },
@@ -122,10 +114,6 @@
         {
           "Id": "Environments-2584",
           "Name": "Branch Instances (Prod)"
-        },
-        {
-          "Id": "Environments-2586",
-          "Name": "Friends of Octopus"
         },
         {
           "Id": "Environments-2587",
@@ -820,37 +808,6 @@
                 "Release": "/api/Spaces-622/releases/Releases-75008",
                 "Tenant": "/api/Spaces-622/tenants/",
                 "Task": "/api/tasks/ServerTasks-781565"
-              }
-            }
-          ],
-          "Environments-2586": [
-            {
-              "Id": "Deployments-89547",
-              "ProjectId": "Projects-4224",
-              "EnvironmentId": "Environments-2586",
-              "ReleaseId": "Releases-75008",
-              "DeploymentId": "Deployments-89547",
-              "TaskId": "ServerTasks-781669",
-              "TenantId": null,
-              "ChannelId": "Channels-4449",
-              "ReleaseVersion": "2020.4.7",
-              "Created": "2020-10-18T23:30:59.252+00:00",
-              "QueueTime": "2020-10-18T23:30:59.231+00:00",
-              "StartTime": "2020-10-18T23:30:59.479+00:00",
-              "CompletedTime": "2020-10-18T23:32:55.111+00:00",
-              "State": "Success",
-              "HasPendingInterruptions": false,
-              "HasWarningsOrErrors": true,
-              "ErrorMessage": "",
-              "Duration": "2 minutes",
-              "IsCurrent": true,
-              "IsPrevious": false,
-              "IsCompleted": true,
-              "Links": {
-                "Self": "/api/Spaces-622/deployments/Deployments-89547",
-                "Release": "/api/Spaces-622/releases/Releases-75008",
-                "Tenant": "/api/Spaces-622/tenants/",
-                "Task": "/api/tasks/ServerTasks-781669"
               }
             }
           ],
@@ -1785,37 +1742,6 @@
                 "Release": "/api/Spaces-622/releases/Releases-74939",
                 "Tenant": "/api/Spaces-622/tenants/",
                 "Task": "/api/tasks/ServerTasks-773142"
-              }
-            }
-          ],
-          "Environments-2586": [
-            {
-              "Id": "Deployments-89371",
-              "ProjectId": "Projects-4224",
-              "EnvironmentId": "Environments-2586",
-              "ReleaseId": "Releases-74939",
-              "DeploymentId": "Deployments-89371",
-              "TaskId": "ServerTasks-773169",
-              "TenantId": null,
-              "ChannelId": "Channels-4449",
-              "ReleaseVersion": "2020.4.6",
-              "Created": "2020-10-15T03:47:34.809+00:00",
-              "QueueTime": "2020-10-15T03:47:34.791+00:00",
-              "StartTime": "2020-10-15T03:47:35.056+00:00",
-              "CompletedTime": "2020-10-15T03:49:17.980+00:00",
-              "State": "Success",
-              "HasPendingInterruptions": false,
-              "HasWarningsOrErrors": true,
-              "ErrorMessage": "",
-              "Duration": "2 minutes",
-              "IsCurrent": false,
-              "IsPrevious": true,
-              "IsCompleted": true,
-              "Links": {
-                "Self": "/api/Spaces-622/deployments/Deployments-89371",
-                "Release": "/api/Spaces-622/releases/Releases-74939",
-                "Tenant": "/api/Spaces-622/tenants/",
-                "Task": "/api/tasks/ServerTasks-773169"
               }
             }
           ],
@@ -3036,37 +2962,6 @@
               }
             }
           ],
-          "Environments-2586": [
-            {
-              "Id": "Deployments-89057",
-              "ProjectId": "Projects-4224",
-              "EnvironmentId": "Environments-2586",
-              "ReleaseId": "Releases-74743",
-              "DeploymentId": "Deployments-89057",
-              "TaskId": "ServerTasks-765084",
-              "TenantId": null,
-              "ChannelId": "Channels-4450",
-              "ReleaseVersion": "2020.3.8",
-              "Created": "2020-10-12T23:59:02.469+00:00",
-              "QueueTime": "2020-10-12T23:59:02.449+00:00",
-              "StartTime": "2020-10-12T23:59:02.680+00:00",
-              "CompletedTime": "2020-10-13T00:00:29.200+00:00",
-              "State": "Success",
-              "HasPendingInterruptions": false,
-              "HasWarningsOrErrors": true,
-              "ErrorMessage": "",
-              "Duration": "1 minute",
-              "IsCurrent": true,
-              "IsPrevious": false,
-              "IsCompleted": true,
-              "Links": {
-                "Self": "/api/Spaces-622/deployments/Deployments-89057",
-                "Release": "/api/Spaces-622/releases/Releases-74743",
-                "Tenant": "/api/Spaces-622/tenants/",
-                "Task": "/api/tasks/ServerTasks-765084"
-              }
-            }
-          ],
           "Environments-2587": [
             {
               "Id": "Deployments-89063",
@@ -3635,37 +3530,6 @@
               }
             }
           ],
-          "Environments-2586": [
-            {
-              "Id": "Deployments-88970",
-              "ProjectId": "Projects-4224",
-              "EnvironmentId": "Environments-2586",
-              "ReleaseId": "Releases-74704",
-              "DeploymentId": "Deployments-88970",
-              "TaskId": "ServerTasks-762727",
-              "TenantId": null,
-              "ChannelId": "Channels-4449",
-              "ReleaseVersion": "2020.4.5",
-              "Created": "2020-10-12T08:40:29.606+00:00",
-              "QueueTime": "2020-10-12T08:40:29.588+00:00",
-              "StartTime": "2020-10-12T08:40:29.821+00:00",
-              "CompletedTime": "2020-10-12T08:41:51.353+00:00",
-              "State": "Success",
-              "HasPendingInterruptions": false,
-              "HasWarningsOrErrors": true,
-              "ErrorMessage": "",
-              "Duration": "1 minute",
-              "IsCurrent": false,
-              "IsPrevious": false,
-              "IsCompleted": true,
-              "Links": {
-                "Self": "/api/Spaces-622/deployments/Deployments-88970",
-                "Release": "/api/Spaces-622/releases/Releases-74704",
-                "Tenant": "/api/Spaces-622/tenants/",
-                "Task": "/api/tasks/ServerTasks-762727"
-              }
-            }
-          ],
           "Environments-2587": [
             {
               "Id": "Deployments-88974",
@@ -3954,37 +3818,6 @@
                 "Release": "/api/Spaces-622/releases/Releases-74699",
                 "Tenant": "/api/Spaces-622/tenants/",
                 "Task": "/api/tasks/ServerTasks-762237"
-              }
-            }
-          ],
-          "Environments-2586": [
-            {
-              "Id": "Deployments-88954",
-              "ProjectId": "Projects-4224",
-              "EnvironmentId": "Environments-2586",
-              "ReleaseId": "Releases-74699",
-              "DeploymentId": "Deployments-88954",
-              "TaskId": "ServerTasks-762305",
-              "TenantId": null,
-              "ChannelId": "Channels-4450",
-              "ReleaseVersion": "2020.3.9",
-              "Created": "2020-10-12T06:12:49.428+00:00",
-              "QueueTime": "2020-10-12T06:12:49.408+00:00",
-              "StartTime": "2020-10-12T06:12:49.644+00:00",
-              "CompletedTime": "2020-10-12T06:14:36.797+00:00",
-              "State": "Success",
-              "HasPendingInterruptions": false,
-              "HasWarningsOrErrors": true,
-              "ErrorMessage": "",
-              "Duration": "2 minutes",
-              "IsCurrent": false,
-              "IsPrevious": true,
-              "IsCompleted": true,
-              "Links": {
-                "Self": "/api/Spaces-622/deployments/Deployments-88954",
-                "Release": "/api/Spaces-622/releases/Releases-74699",
-                "Tenant": "/api/Spaces-622/tenants/",
-                "Task": "/api/tasks/ServerTasks-762305"
               }
             }
           ],

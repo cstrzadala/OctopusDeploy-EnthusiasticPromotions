@@ -69,15 +69,6 @@ $waitTimeForEnvironmentLookup = @{
                                 "PreventDeploymentsOnWeekends" = $true;
                                 "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
                             }
-    "Environments-2586" = @{
-                                "Name" = "Friends of Octopus";
-                                "RingName" = "FriendsOfOctopus";
-                                "BakeTime" = New-TimeSpan -Minutes 0;
-                                "StabilizationPhaseBakeTime" = New-TimeSpan -Days 1;
-                                "MinimumTimeBetweenDeployments" = New-TimeSpan -Hours 12;
-                                "PreventDeploymentsOnWeekends" = $true;
-                                "ProblemCheckType" = [ProblemCheckType]::CheckIfDeploymentsToThisUpgradeRingAreAllowed;
-                            }
     "Environments-2587" = @{
                                 "Name" = "Early Adopters";
                                 "RingName" = "EarlyAdopters";

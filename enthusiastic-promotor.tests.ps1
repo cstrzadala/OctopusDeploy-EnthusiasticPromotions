@@ -175,7 +175,7 @@ Describe 'Enthusiastic promoter' {
     $result.Count | should -be 1
 
     $result[0].Version | Should -be "2021.1.6969"
-    $result[0].EnvironmentName | Should -be "Friends of Octopus"
+    $result[0].EnvironmentName | Should -be "Early Adopters"
     $result[0].ChannelName | Should -be "Latest Release - 2021.1"
   }
 
@@ -183,6 +183,7 @@ Describe 'Enthusiastic promoter' {
     # see https://octopusdeploy.slack.com/archives/C012VMX1YMQ/p1635199339038600
     Mock Test-PipelineBlocked { return $false }
     Mock Get-CurrentDate { return [System.DateTime]::Parse("26/Oct/2021 10:00:00 AM") }
+
     $progression = (Get-Content -Path "SampleData/sample9-progression.json" -Raw) | ConvertFrom-Json
     $channels = (Get-Content -Path "SampleData/sample9-channels.json" -Raw) | ConvertFrom-Json
 
@@ -191,7 +192,7 @@ Describe 'Enthusiastic promoter' {
     $result.Count | should -be 1
 
     $result[0].Version | Should -be "2021.3.6806"
-    $result[0].EnvironmentName | Should -be "Friends of Octopus"
+    $result[0].EnvironmentName | Should -be "Early Adopters"
     $result[0].ChannelName | Should -be "Main Line (master)"
   }
 
@@ -233,7 +234,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
@@ -255,7 +255,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
@@ -277,7 +276,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
@@ -299,7 +297,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
@@ -321,7 +318,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $true; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $true; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $true; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $true; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $true; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $true; } # General Availablilty
@@ -343,7 +339,6 @@ Describe 'Enthusiastic promoter' {
       @{ environmentId = "Environments-2601"; expectBlocked = $false; } # Production
       @{ environmentId = "Environments-2584"; expectBlocked = $false; } # Branch Instances (Prod)
       @{ environmentId = "Environments-2585"; expectBlocked = $false; } # Staff
-      @{ environmentId = "Environments-2586"; expectBlocked = $false; } # Friends of Octopus
       @{ environmentId = "Environments-2587"; expectBlocked = $false; } # Early Adopters
       @{ environmentId = "Environments-2588"; expectBlocked = $false; } # Stable
       @{ environmentId = "Environments-2589"; expectBlocked = $false; } # General Availablilty
